@@ -157,12 +157,12 @@ const checkPurchases = async () => {
     }
 }
 
-const job = new CronJob(
-	process.env.CRON, // cronTime
-	async function () {
+const job = CronJob.from({
+	cronTime: process.env.CRON,
+	onTick: async () => {
 		await checkPurchases();
-	}, // onTick
-	null, // onComplete
-	true, // start
-	process.env.TZ // timeZone
-);
+	},
+	start: true,
+	timeZone: process.env.TZ,
+    runOnInit: true
+});
