@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+const CronJob = require('cron').CronJob;
 const chalk = require('chalk');
 
 const Cloudflare = require('cloudflare');
@@ -130,7 +131,7 @@ async function downloadAndUpload(purchase, newer = false) {
     });
 }
 
-(async () => {
+const checkPurchases = async () => {
     const purchasesRequest = await getEnvato('/buyer/list-purchases');
 
     const purchases = purchasesRequest.results;
@@ -154,4 +155,14 @@ async function downloadAndUpload(purchase, newer = false) {
             //console.log(`${chalk.gray('[')}${chalk.cyan('QUEUE')}${chalk.gray(']')} ${chalk.yellow('Pending')}${chalk.gray(':')} ${queue.size} / ${chalk.greenBright('Running')}${chalk.gray(':')} ${queue.pending}`);
         }
     }
-})();
+}
+
+const job = new CronJob(
+	process.env.CRON, // cronTime
+	async function () {
+		await checkPurchases();
+	}, // onTick
+	null, // onComplete
+	true, // start
+	process.env.TZ // timeZone
+);
