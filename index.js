@@ -54,6 +54,19 @@ const queue = new PQueue( { concurrency: parseInt(process.env.CONCURRENCY) });
 const getBuffer = bent('buffer');
 const { PassThrough } = require('stream');
 
+const postWebhook = process.env.DISCORD_WEBHOOK_URL ? bent(process.env.DISCORD_WEBHOOK_URL, 'POST', 'json', 204) : null;
+
+async function sendDiscordWebhook(embed) {
+    if (!postWebhook) return;
+    try {
+        await postWebhook('', {
+            embeds: [embed]
+        });
+    } catch (err) {
+        console.error(`${chalk.gray('[')}${chalk.red('DISCORD')}${chalk.gray(']')} ${chalk.red('Error sending webhook')}`, err.message);
+    }
+}
+
 const queryD1 = async (sql, params = [], single = false) => {
     const result = await client.d1.database.query(process.env.CF_D1_ID, {
         account_id: process.env.CF_ACCOUNT_ID,
@@ -114,11 +127,42 @@ async function downloadAndUpload(purchase, newer = false) {
 
             if (newer) {
                 await queryD1(`insert into ${process.env.CF_D1_TABLE} (id, name, url, updated_at) values (?, ?, ?, ?)`, [item.id, item.name, item.url, item.updated_at], true)
-                    .then(async (res) => { console.log(`${chalk.gray('[')}${chalk.cyan('SQL')}${chalk.gray(']')} ${chalk.green('New')} ${purchase.item.name} ${chalk.gray('(')}${chalk.blue(purchase.item.id)}${chalk.gray(')')}`); })
+                    .then(async (res) => {
+                        console.log(`${chalk.gray('[')}${chalk.cyan('SQL')}${chalk.gray(']')} ${chalk.green('New')} ${purchase.item.name} ${chalk.gray('(')}${chalk.blue(purchase.item.id)}${chalk.gray(')')}`);
+                        await sendDiscordWebhook({
+                            title: '🆕 Nouvel achat sauvegardé',
+                            description: `L'article **${item.name}** a été ajouté à la sauvegarde.`,
+                            url: item.url,
+                            color: 3066993, // Green
+                            fields: [
+                                { name: 'ID', value: item.id.toString(), inline: true },
+                                { name: 'Site', value: item.site, inline: true },
+                                { name: 'Catégorie', value: item.classification, inline: true },
+                                { name: 'Mis à jour le', value: new Date(item.updated_at).toLocaleString(), inline: false }
+                            ],
+                            thumbnail: { url: item.previews?.icon_with_landscape_preview?.landscape_url || item.previews?.landscape_preview?.landscape_url },
+                            timestamp: new Date().toISOString()
+                        });
+                    })
                     .catch(err => { console.log(err.message) });
             } else {
                 await queryD1(`update ${process.env.CF_D1_TABLE} set updated_at = ? where id = ?`, [item.updated_at, item.id], true)
-                    .then(async (res) => { console.log(`${chalk.gray('[')}${chalk.cyan('SQL')}${chalk.gray(']')} ${chalk.yellow('Update')} ${purchase.item.name} ${chalk.gray('(')}${chalk.blue(purchase.item.id)}${chalk.gray(')')}`); })
+                    .then(async (res) => {
+                        console.log(`${chalk.gray('[')}${chalk.cyan('SQL')}${chalk.gray(']')} ${chalk.yellow('Update')} ${purchase.item.name} ${chalk.gray('(')}${chalk.blue(purchase.item.id)}${chalk.gray(')')}`);
+                        await sendDiscordWebhook({
+                            title: '🔄 Mise à jour sauvegardée',
+                            description: `Une nouvelle version de **${item.name}** a été sauvegardée.`,
+                            url: item.url,
+                            color: 15844367, // Gold
+                            fields: [
+                                { name: 'ID', value: item.id.toString(), inline: true },
+                                { name: 'Site', value: item.site, inline: true },
+                                { name: 'Mis à jour le', value: new Date(item.updated_at).toLocaleString(), inline: false }
+                            ],
+                            thumbnail: { url: item.previews?.icon_with_landscape_preview?.landscape_url || item.previews?.landscape_preview?.landscape_url },
+                            timestamp: new Date().toISOString()
+                        });
+                    })
                     .catch(err => { console.log(err.message) });
             }
         } catch (err) {

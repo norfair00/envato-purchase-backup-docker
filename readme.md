@@ -55,4 +55,5 @@ R2_BUCKET=envato-purchase
 
 **Notes:**
 - `CONCURRENCY` controls how many downloads are processed simultaneously
+- `DISCORD_WEBHOOK_URL` (Optional) can be used to receive notifications on Discord
 - Do not commit your `.env` file; it contains sensitive credentials
