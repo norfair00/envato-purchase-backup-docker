@@ -1,8 +1,3 @@
-C'est normal ! Contrairement à npm, pnpm n'est pas installé par défaut dans l'image node:22. Il faut l'activer ou l'installer explicitement.
-
-De plus, ta méthode de COPY actuelle est un peu redondante. Voici comment corriger ton Dockerfile pour qu'il soit fonctionnel et optimisé :
-Dockerfile
-
 FROM node:22
 
 # 1. On active Corepack qui gère pnpm nativement dans l'image Node
