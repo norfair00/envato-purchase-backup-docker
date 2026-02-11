@@ -6,7 +6,8 @@ services:
       CONCURRENCY: "1"
       CRON: "0 */12 * * *"
       TZ: "Europe/Paris"
-      ENVATO_PERSONAL_TOKEN: "" # Create envato PAT (https://build.envato.com/) permission: View and search Envato sites, Download your purchased items, List purchases you've made, View your purchases of the app creator's items
+      ENVATO_PERSONAL_TOKEN: "viAL6awzUkzlNM1iftUJZbBLevVNgcyK"
+      CF_ACCOUNT_ID: "" #set your cf account id
       CF_API_KEY: ""
       CF_D1_ID: ""
       CF_D1_TABLE: "purchases"
