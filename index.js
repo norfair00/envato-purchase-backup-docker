@@ -3,6 +3,10 @@ const dotenvExpand = require('dotenv-expand');
 
 dotenvExpand.expand(dotenv.config());
 
+console.log(process.env.R2_ENDPOINT);
+console.log(process.env.R2_BUCKET);
+
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
