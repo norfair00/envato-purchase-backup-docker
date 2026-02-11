@@ -54,7 +54,7 @@ const queue = new PQueue( { concurrency: parseInt(process.env.CONCURRENCY) });
 const getBuffer = bent('buffer');
 const { PassThrough } = require('stream');
 
-const postWebhook = process.env.DISCORD_WEBHOOK_URL ? bent(process.env.DISCORD_WEBHOOK_URL, 'POST', 'json', 204) : null;
+const postWebhook = process.env.DISCORD_WEBHOOK_URL ? bent(process.env.DISCORD_WEBHOOK_URL, 'POST', 204) : null;
 
 async function sendDiscordWebhook(embed) {
     if (!postWebhook) return;
